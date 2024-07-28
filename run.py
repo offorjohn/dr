@@ -1,8 +1,4 @@
-
-
-
-
-
+import logging
 from fastapi import FastAPI
 import gradio as gr
 import whisper
@@ -11,11 +7,16 @@ from gtts import gTTS
 import os
 import tempfile
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+
 # Load the Whisper model
+model = None
 try:
     model = whisper.load_model("base")
+    logging.info("Whisper model loaded successfully.")
 except Exception as e:
-    print(f"Error loading Whisper model: {e}")
+    logging.error(f"Error loading Whisper model: {e}")
 
 # Initialize the translator
 def create_translator(target_language):
@@ -23,23 +24,30 @@ def create_translator(target_language):
         translator = Translator(to_lang=target_language)
         return translator
     except Exception as e:
-        print(f"Error creating translator for {target_language}: {e}")
+        logging.error(f"Error creating translator for {target_language}: {e}")
         return None
 
 def transcribe_and_translate(audio, target_language):
+    if model is None:
+        logging.error("Whisper model is not loaded.")
+        return "Model not loaded", "Model not loaded"
+    
     try:
+        logging.info("Starting transcription and translation process.")
         # Transcribe the audio
         transcription = model.transcribe(audio)["text"]
+        logging.info(f"Transcription: {transcription}")
         
         # Translate the transcription
         translator = create_translator(target_language)
         if translator is not None:
             translated_text = translator.translate(transcription)
+            logging.info(f"Translated text: {translated_text}")
             return transcription, translated_text
         else:
             return transcription, "Translation Error"
     except Exception as e:
-        print(f"Error in transcribe_and_translate: {e}")
+        logging.error(f"Error in transcribe_and_translate: {e}")
         return "Transcription Error", "Translation Error"
 
 def text_to_speech(text):
@@ -53,7 +61,7 @@ def text_to_speech(text):
         
         return temp_file.name
     except Exception as e:
-        print(f"Error in text_to_speech: {e}")
+        logging.error(f"Error in text_to_speech: {e}")
         return None
 
 # Define the Gradio interface with custom styling

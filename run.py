@@ -4,7 +4,6 @@ import gradio as gr
 import whisper
 from translate import Translator
 from gtts import gTTS
-import os
 import tempfile
 
 # Configure logging
@@ -27,22 +26,20 @@ def create_translator(target_language):
         logging.error(f"Error creating translator for {target_language}: {e}")
         return None
 
-def transcribe_and_translate(audio, target_language):
+def transcribe_and_translate(audio_path, target_language):
     if model is None:
-        logging.error("Whisper model is not loaded.")
-        return "Model not loaded", "Model not loaded"
+        logging.error("Model is not loaded.")
+        return "Transcription Error", "Translation Error"
     
     try:
-        logging.info("Starting transcription and translation process.")
-        # Transcribe the audio
-        transcription = model.transcribe(audio)["text"]
-        logging.info(f"Transcription: {transcription}")
+        # Open the audio file for reading in binary mode
+        with open(audio_path, 'rb') as audio_file:
+            transcription = model.transcribe(audio_file)["text"]
         
         # Translate the transcription
         translator = create_translator(target_language)
         if translator is not None:
             translated_text = translator.translate(transcription)
-            logging.info(f"Translated text: {translated_text}")
             return transcription, translated_text
         else:
             return transcription, "Translation Error"

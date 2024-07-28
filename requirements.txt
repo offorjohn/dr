@@ -70,4 +70,6 @@ uvicorn
 websockets
 yarl
 zipp
-
+gtts
+whisper
+translate

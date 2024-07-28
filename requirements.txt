@@ -70,7 +70,4 @@ uvicorn
 websockets
 yarl
 zipp
-streamlit
-openai-whisper
-torch
-torchaudio
+
